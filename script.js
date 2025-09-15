@@ -37,7 +37,6 @@ const fadeHandler = function (event) {
 nav.addEventListener('mouseover', fadeHandler.bind(0.5));
 nav.addEventListener('mouseout', fadeHandler.bind(1));
 
-
 /* =====================================================
    STICKY NAVIGATION ON SCROLL
    =====================================================
@@ -61,20 +60,19 @@ const header = document.querySelector('.header');
 const stickyNav = function (entries) {
   const [entry] = entries;
 
-  if (!entry.isIntersecting) nav.classList.add('sticky');  // Make sticky
-  else nav.classList.remove('sticky');                     // Remove sticky
+  if (!entry.isIntersecting) nav.classList.add('sticky'); // Make sticky
+  else nav.classList.remove('sticky'); // Remove sticky
 };
 
 // Create observer with configuration
 const headerObserver = new IntersectionObserver(stickyNav, {
-  root: null,           // Use viewport
-  threshold: 0,         // Trigger immediately when header leaves viewport
-  rootMargin: '-90px',  // Shrink viewport by 90px to trigger earlier
+  root: null, // Use viewport
+  threshold: 0, // Trigger immediately when header leaves viewport
+  rootMargin: '-90px', // Shrink viewport by 90px to trigger earlier
 });
 
 // Observe the header element
 headerObserver.observe(header);
-
 
 /* =====================================================
    SMOOTH SCROLLING FOR NAV LINKS
@@ -101,7 +99,6 @@ navLinksContainer.addEventListener('click', function (event) {
   document.querySelector(sectionId).scrollIntoView({ behavior: 'smooth' });
 });
 
-
 /* =====================================================
    "LEARN MORE" BUTTON SCROLL
    =====================================================
@@ -121,7 +118,6 @@ btnScrollTo.addEventListener('click', function () {
   document.querySelector('#section--1').scrollIntoView({ behavior: 'smooth' });
 });
 
-
 /* =====================================================
    OPERATIONS MODAL / TAB SWITCHING
    =====================================================
@@ -136,7 +132,9 @@ btnScrollTo.addEventListener('click', function () {
 ===================================================== */
 
 /** @type {HTMLElement} Container for all tabs */
-const operationsTabContainer = document.querySelector('.operations__tab-container');
+const operationsTabContainer = document.querySelector(
+  '.operations__tab-container'
+);
 /** @type {NodeListOf<HTMLElement>} All tab buttons */
 const operationsTabs = document.querySelectorAll('.operations__tab');
 /** @type {NodeListOf<HTMLElement>} All tab content sections */
@@ -151,16 +149,76 @@ const switchTab = function (event) {
   if (!clicked) return; // Exit if click is outside a tab
 
   // Remove active state from all tabs
-  operationsTabs.forEach(tab => tab.classList.remove('operations__tab--active'));
+  operationsTabs.forEach(tab =>
+    tab.classList.remove('operations__tab--active')
+  );
   // Add active state to clicked tab
   clicked.classList.add('operations__tab--active');
 
   // Remove active state from all content sections
-  operationsContents.forEach(content => content.classList.remove('operations__content--active'));
+  operationsContents.forEach(content =>
+    content.classList.remove('operations__content--active')
+  );
   // Show content corresponding to clicked tab
-  const targetContent = document.querySelector(`.operations__content--${clicked.dataset.tab}`);
+  const targetContent = document.querySelector(
+    `.operations__content--${clicked.dataset.tab}`
+  );
   targetContent.classList.add('operations__content--active');
 };
 
 // Add click listener using event delegation
 operationsTabContainer.addEventListener('click', switchTab);
+
+/* =====================================================
+   SECTION REVEAL ON SCROLL
+   =====================================================
+   Description:
+     Reveals each hidden section as it enters the viewport 
+     while scrolling.
+
+   Implementation:
+     - Adds 'section--hidden' class to all sections initially
+     - Uses Intersection Observer API to detect visibility
+     - When 15% of a section is visible, the hidden class is removed
+     - Each section is unobserved after being revealed (performance optimization)
+===================================================== */
+
+// Select all section elements
+const allSections = document.querySelectorAll('.section');
+
+/**
+ * Intersection Observer callback:
+ * Reveals section once it intersects with the viewport.
+ *
+ * @param {IntersectionObserverEntry[]} entries - Observed entries
+ * @param {IntersectionObserver} observer - The observer instance
+ */
+const revealSection = function (entries, observer) {
+  /**
+   * Loop through all observed entries and reveal the section
+   * once it enters the viewport.
+   *
+   * @param {IntersectionObserverEntry[]} entries - Array of observed entries
+   */
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return; // Skip if section not visible
+    entry.target.classList.remove('section--hidden'); // Show section
+    observer.unobserve(entry.target); // Stop observing revealed section
+  });
+};
+
+/**
+ * Intersection Observer settings:
+ * - root: null → viewport is the container
+ * - threshold: 0.15 → callback triggers when 15% is visible
+ */
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
+// Hide all sections initially and start observing them
+allSections.forEach(function (section) {
+  section.classList.add('section--hidden');
+  sectionObserver.observe(section);
+});
